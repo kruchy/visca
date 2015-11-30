@@ -1,98 +1,71 @@
 package pl.agh.kis.mult.v01;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import jssc.SerialPort;
 import jssc.SerialPortException;
-import pl.agh.kis.mult.v01.command.ChainCommand;
-import pl.agh.kis.mult.v01.command.ClearCommand;
-import pl.agh.kis.mult.v01.command.DownCommand;
-import pl.agh.kis.mult.v01.command.HomeCommand;
-import pl.agh.kis.mult.v01.command.LeftCommand;
-import pl.agh.kis.mult.v01.command.RightCommand;
-import pl.agh.kis.mult.v01.command.SetAddressCommand;
-import pl.agh.kis.mult.v01.command.StopCommand;
-import pl.agh.kis.mult.v01.command.UpCommand;
+import pl.agh.kis.mult.v01.command.*;
 
 public class ViscaCtrl {
 	private SerialPort serialPort = null;
 	private String definingMacro = null;
-	private HashMap<String, ChainCommand> macroMap = new HashMap<String, ChainCommand>();
-
+	private HashMap<String, ArrayList<String>> macroMap = new HashMap<>();
+	private ChainCommand chainCommand;
 	public void init() throws SerialPortException {
 		serialPort = new SerialPort("com1");
-
-		serialPort.setParams(9600, 8, 1, 0);
-
+//		serialPort.setParams(9600, 8, 1, 0);
+		chainCommand = new UpCommand();
+		ChainCommand down = new DownCommand();
+		ChainCommand right = new RightCommand();
+		ChainCommand left = new LeftCommand();
+		chainCommand.setNext(down);
+		down.setNext(right);
+		right.setNext(left);
 	}
 
 	public void closeSerial() throws SerialPortException {
 		serialPort.closePort();
 	}
 
-	private ChainCommand stringToCommand(String commandString) {
-		ChainCommand command = null;
-		switch (commandString.trim()) {
-		case "clear":
-			command = new ClearCommand();
-			break;
-		case "down":
-			command = new DownCommand();
-			break;
-		case "home":
-			command = new HomeCommand();
-			break;
-		case "left":
-			command = new LeftCommand();
-			break;
-		case "right":
-			command = new RightCommand();
-			break;
-		case "set":
-			command = new SetAddressCommand();
-			break;
-		case "stop":
-			command = new StopCommand();
-			break;
-		case "up":
-			command = new UpCommand();
-			break;
-		}
-		return command;
-	}
-
 	public String executeCommand(String commandString)
-			throws SerialPortException {
+			throws SerialPortException,UnknownCommandException {
+
+
 
 		if (commandString.contains("macro-start")) {
 			String macroName = commandString.split("\\s+")[1];
-			macroMap.put(macroName, null);
+            System.out.println("Started defining macro "+macroName);
+            macroMap.put(macroName, new ArrayList<>());
 			definingMacro = macroName;
-
 		} else if (commandString.contains("macro-stop")) {
+            System.out.println("Stopped defining macro");
 			definingMacro = null;
 		} else if (commandString.contains("macro-execute")) {
 			String macroName = commandString.split("\\s+")[1];
-			ChainCommand command = macroMap.get(macroName);
 
-			return executeMacro(command);
+            if(macroMap.containsKey(macroName)) {
 
+                System.out.println("Started executing macro "+ macroName);
+					ArrayList<String> commandList = macroMap.get(macroName);
+				Iterator<String> commandIterator = commandList.iterator();
+				while (commandIterator.hasNext()) {
+                    chainCommand.execute(commandIterator.next(), serialPort);
+				}
+			}
 		} else if (definingMacro != null) {
-			ChainCommand command = stringToCommand(commandString);
-			if (command == null) {
-				return "fail";
-			}
+
 			if (macroMap.get(definingMacro) == null) {
-				macroMap.put(definingMacro, command);
+                ArrayList<String> list = new ArrayList<>();
+                list.add(commandString);
+				macroMap.put(definingMacro,list);
 			} else {
-				macroMap.get(definingMacro).setNext(command);
+				macroMap.get(definingMacro).add(commandString);
 			}
-		} else {
-
-			ChainCommand command = stringToCommand(commandString);
-
-			return executeCommand(command);
 		}
+        else if (definingMacro == null)
+                chainCommand.execute(commandString,serialPort);
 		return "ok";
 	}
 

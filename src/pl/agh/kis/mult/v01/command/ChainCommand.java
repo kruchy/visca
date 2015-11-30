@@ -33,7 +33,7 @@ public abstract class ChainCommand {
 
     public abstract byte[] getCommand();
 
-    public void execute(String command, SerialPort serialPort) throws NotKnownCommand, SerialPortException
+    public void execute(String command, SerialPort serialPort) throws UnknownCommandException, SerialPortException
     {
         if(command.equals(commandName))
 //            serialPort.writeBytes(getCommand());

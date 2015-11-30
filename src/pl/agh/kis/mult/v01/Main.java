@@ -24,23 +24,26 @@ public class Main {
 
 		ViscaCtrl viscaCtrl = new ViscaCtrl();
 
-		// viscaCtrl.init();
-		SerialPort serialPort = new SerialPort("com1");
+        try {
+            viscaCtrl.init();
+        } catch (SerialPortException e) {
+            e.printStackTrace();
+        }
 		BufferedReader buffer = new BufferedReader(new InputStreamReader(
 				System.in));
 		String line = null;
 		do {
 			try {
 				line = buffer.readLine();
-				up.execute(line,serialPort);
+                viscaCtrl.executeCommand(line);
 			} catch (IOException e1) {
 				e1.printStackTrace();
-			} catch (NotKnownCommand notKnownCommand) {
-				notKnownCommand.printStackTrace();
 			} catch (SerialPortException e) {
 				e.printStackTrace();
-			}
-		}
+			} catch (UnknownCommandException e) {
+                e.printStackTrace();
+            }
+        }
 		while(!line.equals("close"));
 
 
