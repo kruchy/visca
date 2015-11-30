@@ -36,7 +36,8 @@ public abstract class ChainCommand {
     public void execute(String command, SerialPort serialPort) throws NotKnownCommand, SerialPortException
     {
         if(command.equals(commandName))
-            serialPort.writeBytes(getCommand());
+//            serialPort.writeBytes(getCommand());
+                System.out.println(command);
         else
         {
             if(next != null)
