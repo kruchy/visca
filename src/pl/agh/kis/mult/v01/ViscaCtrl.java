@@ -5,24 +5,35 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import jssc.SerialPort;
+import jssc.SerialPortEvent;
+import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 import pl.agh.kis.mult.v01.command.*;
 
-public class ViscaCtrl {
+public class ViscaCtrl implements SerialPortEventListener {
 	private SerialPort serialPort = null;
 	private String definingMacro = null;
 	private HashMap<String, ArrayList<String>> macroMap = new HashMap<>();
 	private ChainCommand chainCommand;
-	public void init() throws SerialPortException {
+	
+	public ViscaCtrl() throws SerialPortException {
 		serialPort = new SerialPort("com1");
-//		serialPort.setParams(9600, 8, 1, 0);
+//		serialPort.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+        serialPort.addEventListener(this);
+        serialPort.setEventsMask(SerialPort.MASK_RXCHAR);
 		chainCommand = new UpCommand();
 		ChainCommand down = new DownCommand();
-		ChainCommand right = new RightCommand();
 		ChainCommand left = new LeftCommand();
+		ChainCommand right = new RightCommand();
+		ChainCommand home = new HomeCommand();
+		ChainCommand stop = new StopCommand();
+		ChainCommand setAddress = new SetAddressCommand();
 		chainCommand.setNext(down);
-		down.setNext(right);
-		right.setNext(left);
+		down.setNext(left);
+		left.setNext(right);
+		right.setNext(home);
+		home.setNext(stop);
+		stop.setNext(setAddress);
 	}
 
 	public void closeSerial() throws SerialPortException {
@@ -69,19 +80,16 @@ public class ViscaCtrl {
 		return "ok";
 	}
 
-	public String executeCommand(ChainCommand command)
-			throws SerialPortException {
-		serialPort.writeBytes(command.getCommand());
-		return "ok " + command.getCommandName();
-	}
+    @Override
+    public void serialEvent(SerialPortEvent serialPortEvent) {
+        if(serialPortEvent.isRXCHAR() && serialPortEvent.getEventValue() == 10 )
+        {
+            try {
+                byte[] response = serialPort.readBytes(10);
+            } catch (SerialPortException e) {
+                System.err.println("Error receiving bytes from port");
+            }
+        }
 
-	public String executeMacro(ChainCommand command) throws SerialPortException {
-
-		while (command != null) {
-			executeCommand(command);
-			command = command.getNext();
-		}
-		return "ok";
-	}
-
+    }
 }

@@ -14,18 +14,11 @@ import pl.agh.kis.mult.v01.command.*;
 public class Main {
 	public static void main(String[] args) {
 
-		 ChainCommand up = new UpCommand();
-		 ChainCommand down = new DownCommand();
-		 ChainCommand left = new LeftCommand();
-		 ChainCommand right = new RightCommand();
-		 up.setNext(down);
-		 down.setNext(left);
-		 left.setNext(right);
 
-		ViscaCtrl viscaCtrl = new ViscaCtrl();
+        ViscaCtrl viscaCtrl = null;
 
         try {
-            viscaCtrl.init();
+            viscaCtrl = new ViscaCtrl();
         } catch (SerialPortException e) {
             e.printStackTrace();
         }
@@ -41,7 +34,7 @@ public class Main {
 			} catch (SerialPortException e) {
 				e.printStackTrace();
 			} catch (UnknownCommandException e) {
-                e.printStackTrace();
+                System.out.println("Unknown command");
             }
         }
 		while(!line.equals("close"));

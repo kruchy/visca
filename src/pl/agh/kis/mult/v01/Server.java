@@ -35,7 +35,11 @@ public class Server implements Runnable {
 	}
 
 	public void run() {
-		viscaCtrl = new ViscaCtrl();
+		try {
+			viscaCtrl = new ViscaCtrl();
+		} catch (SerialPortException e) {
+			e.printStackTrace();
+		}
 		try {
 			// viscaCtrl.init();
 			ServerSocket server = new ServerSocket(port);
