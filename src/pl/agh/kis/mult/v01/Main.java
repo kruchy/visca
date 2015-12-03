@@ -27,11 +27,9 @@ public class Main {
                 viscaCtrl.executeCommand(line);
 			} catch (IOException e1) {
 				e1.printStackTrace();
-			} catch (SerialPortException e) {
-				e.printStackTrace();
 			} catch (UnknownCommandException e) {
                 System.out.println("Command not supported");
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
