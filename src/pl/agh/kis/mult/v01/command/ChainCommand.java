@@ -35,14 +35,14 @@ public abstract class ChainCommand {
 
     public void execute(String command, SerialPort serialPort) throws UnknownCommandException, SerialPortException
     {
-        if(command.equals(commandName))
-//        serialPort.writeBytes(getCommand());
-//        byte[50] bytesRead = serialPort.readBytes(50,5000);
-//        for (byte b : bytesRead)
-//        {
-//
-//        }
+        if(serialPort.isOpened() && command.equals(commandName)) {
+            {
+                serialPort.writeBytes(getCommand());
+            }
+        }
+        else if(!serialPort.isOpened() && command.equals(commandName))
         {
+
             System.out.println(command);
         }
         else
