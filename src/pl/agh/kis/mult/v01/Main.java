@@ -17,12 +17,8 @@ public class Main {
 
         ViscaCtrl viscaCtrl = null;
 
-        try {
-            viscaCtrl = new ViscaCtrl();
-        } catch (SerialPortException e) {
-            e.printStackTrace();
-        }
-		BufferedReader buffer = new BufferedReader(new InputStreamReader(
+        viscaCtrl = new ViscaCtrl();
+        BufferedReader buffer = new BufferedReader(new InputStreamReader(
 				System.in));
 		String line = null;
 		do {
@@ -34,7 +30,7 @@ public class Main {
 			} catch (SerialPortException e) {
 				e.printStackTrace();
 			} catch (UnknownCommandException e) {
-                System.out.println("Unknown command");
+                System.out.println("Command not supported");
             }
         }
 		while(!line.equals("close"));

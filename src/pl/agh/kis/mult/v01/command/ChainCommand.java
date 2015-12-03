@@ -51,7 +51,12 @@ public abstract class ChainCommand {
             {
                 next.execute(command,serialPort);
             }
+            else
+            {
+                throw new UnknownCommandException();
+            }
         }
+
     }
 
     public String getCommandName() {

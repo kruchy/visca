@@ -15,13 +15,23 @@ public class ViscaCtrl implements SerialPortEventListener {
 	private String definingMacro = null;
 	private HashMap<String, ArrayList<String>> macroMap = new HashMap<>();
 	private ChainCommand chainCommand;
-	
-	public ViscaCtrl() throws SerialPortException {
+    private String macroName;
+
+    public boolean canWriteToPort()
+    {
+        return serialPort.isOpened();
+    }
+
+	public ViscaCtrl() {
 		serialPort = new SerialPort("com1");
-//        serialPort.openPort();
-//		serialPort.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-//        serialPort.addEventListener(this);
-//        serialPort.setEventsMask(SerialPort.MASK_RXCHAR);
+        try {
+            serialPort.openPort();
+            serialPort.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            serialPort.addEventListener(this);
+            serialPort.setEventsMask(SerialPort.MASK_RXCHAR);
+        } catch (SerialPortException e) {
+            System.err.println("Cannot write to port");
+        }
 		chainCommand = new UpCommand();
 		ChainCommand down = new DownCommand();
 		ChainCommand left = new LeftCommand();
@@ -45,41 +55,58 @@ public class ViscaCtrl implements SerialPortEventListener {
 			throws SerialPortException,UnknownCommandException {
 
 
-
 		if (commandString.contains("macro-start")) {
-			String macroName = commandString.split("\\s+")[1];
-            System.out.println("Started defining macro "+macroName);
-            macroMap.put(macroName, new ArrayList<>());
-			definingMacro = macroName;
+            startMacro(commandString);
 		} else if (commandString.contains("macro-stop")) {
-            System.out.println("Stopped defining macro");
-			definingMacro = null;
+            stopMacro();
 		} else if (commandString.contains("macro-execute")) {
-			String macroName = commandString.split("\\s+")[1];
-
-            if(macroMap.containsKey(macroName)) {
-
-                System.out.println("Started executing macro "+ macroName);
-					ArrayList<String> commandList = macroMap.get(macroName);
-				Iterator<String> commandIterator = commandList.iterator();
-				while (commandIterator.hasNext()) {
-                    chainCommand.execute(commandIterator.next(), serialPort);
-				}
-			}
+            executeMacro(commandString);
 		} else if (definingMacro != null) {
-
-			if (macroMap.get(definingMacro) == null) {
-                ArrayList<String> list = new ArrayList<>();
-                list.add(commandString);
-				macroMap.put(definingMacro,list);
-			} else {
-				macroMap.get(definingMacro).add(commandString);
-			}
-		}
+            putNewMacro(commandString);
+        }
         else if (definingMacro == null)
-                chainCommand.execute(commandString,serialPort);
-		return "ok";
+            executeSingleCommand(commandString);
+        return "ok";
 	}
+
+    private void executeSingleCommand(String commandString) throws UnknownCommandException, SerialPortException {
+        chainCommand.execute(commandString,serialPort);
+    }
+
+    private void putNewMacro(String commandString) {
+        if (macroMap.get(definingMacro) == null) {
+ArrayList<String> list = new ArrayList<>();
+list.add(commandString);
+            macroMap.put(definingMacro,list);
+        } else {
+            macroMap.get(definingMacro).add(commandString);
+        }
+    }
+
+    private void executeMacro(String commandString) throws UnknownCommandException, SerialPortException {
+        macroName = commandString.split("\\s+")[1];
+        if(macroMap.containsKey(macroName)) {
+
+            System.out.println("Started executing macro "+ macroName);
+                ArrayList<String> commandList = macroMap.get(macroName);
+            Iterator<String> commandIterator = commandList.iterator();
+            while (commandIterator.hasNext()) {
+                executeSingleCommand(commandIterator.next());
+            }
+        }
+    }
+
+    private void stopMacro() {
+        System.out.println("Stopped defining macro");
+        definingMacro = null;
+    }
+
+    private void startMacro(String commandString) {
+        macroName = commandString.split("\\s+")[1];
+        System.out.println("Started defining macro "+ macroName);
+        macroMap.put(macroName, new ArrayList<>());
+        definingMacro = macroName;
+    }
 
     @Override
     public void serialEvent(SerialPortEvent serialPortEvent) {
