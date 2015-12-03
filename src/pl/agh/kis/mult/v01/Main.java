@@ -31,8 +31,10 @@ public class Main {
 				e.printStackTrace();
 			} catch (UnknownCommandException e) {
                 System.out.println("Command not supported");
-            }
-        }
+            } catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 		while(!line.equals("close"));
 
 

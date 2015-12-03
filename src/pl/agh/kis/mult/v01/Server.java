@@ -60,12 +60,10 @@ public class Server implements Runnable {
 							String resp = "";
 							System.out.println(command);
 							try {
-								resp = viscaCtrl.executeCommand(command);
+								viscaCtrl.executeCommand(command.trim());
 							} catch (Exception e) {
-								resp = e.getStackTrace().toString();
+								System.err.println("Error executing command " + command);
 							}
-							System.out.println(resp);
-
 							OutputStream out = socket.getOutputStream();
 
 							out.write(resp.getBytes());
