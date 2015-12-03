@@ -28,7 +28,10 @@ public abstract class ChainCommand {
 
     public void setNext(ChainCommand next)
     {
-        this.next = next;
+        if(this.next == null)
+          this.next = next;
+        else
+            this.next.setNext(next);
     }
 
     public abstract byte[] getCommand();

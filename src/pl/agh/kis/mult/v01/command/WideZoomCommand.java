@@ -3,8 +3,8 @@ package pl.agh.kis.mult.v01.command;
 /**
  * Created by Krzysiek on 2015-12-03.
  */
-public class WideZoom extends ChainCommand {
-    public WideZoom() {
+public class WideZoomCommand extends ChainCommand {
+    public WideZoomCommand() {
         super("wide");
     }
 
