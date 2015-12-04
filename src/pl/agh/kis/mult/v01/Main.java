@@ -16,7 +16,6 @@ public class Main {
 
 
         ViscaCtrl viscaCtrl = null;
-
         viscaCtrl = new ViscaCtrl();
         BufferedReader buffer = new BufferedReader(new InputStreamReader(
 				System.in));

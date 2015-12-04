@@ -12,7 +12,7 @@ public class SetAddressCommand  extends ChainCommand{
 
     @Override
     public byte[] getCommand() {
-        return new byte[] {head,(byte)0x30 ,(byte)0x01 ,tail};
+        return new byte[] {(byte)0x81,(byte)0x30 ,(byte)0x01 ,tail};
     }
 
 
