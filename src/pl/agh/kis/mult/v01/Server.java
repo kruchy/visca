@@ -41,14 +41,12 @@ public class Server implements Runnable {
 			ServerSocket server = new ServerSocket(port);
 			while (true) {
 				Socket socket = server.accept();
-				// System.out.println(socket.getInetAddress());
 				// Get response from server
 				String response;
 				BufferedReader s_in = null;
 				s_in = new BufferedReader(new InputStreamReader(
 						socket.getInputStream()));
 				while ((response = s_in.readLine()) != null) {
-					// System.out.println(response);
 					if (response.startsWith("GET /?")) {
 						String[] paramsArr = response.split("/\\?");
 						String params = paramsArr[1];
@@ -58,7 +56,6 @@ public class Server implements Runnable {
 							String command = paramMap.get("command");
 							command = URLDecoder.decode(command, "UTF-8");
 							String resp = "";
-							System.out.println(command);
 							try {
 								viscaCtrl.executeCommand(command.trim());
 							} catch (Exception e) {

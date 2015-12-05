@@ -3,6 +3,8 @@ package pl.agh.kis.mult.v01.command;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 
+import java.util.Arrays;
+
 
 /**
  * Created by Krzysiek on 2015-11-27.
@@ -12,11 +14,11 @@ public abstract class ChainCommand {
     private String commandName;
 
     protected ChainCommand next;
-
+    public static byte currentAddress = (byte) 0x81;
     protected boolean daisyChaining = false;
 
     protected byte tail = (byte) 0xFF;
-    protected byte[] heads = {(byte) 0x81, (byte) 0x82, (byte) 0x83, (byte) 0x84, (byte) 0x85, (byte) 0x86, (byte) 0x87};
+    protected static byte[] heads = {(byte) 0x81, (byte) 0x82, (byte) 0x83, (byte) 0x84, (byte) 0x85, (byte) 0x86, (byte) 0x87};
 
     public boolean isDaisyChaining() {
         return daisyChaining;
@@ -34,6 +36,8 @@ public abstract class ChainCommand {
         return next;
     }
 
+    public String secondParam;
+
     public void setNext(ChainCommand next) {
         if (this.next == null)
             this.next = next;
@@ -41,11 +45,24 @@ public abstract class ChainCommand {
             this.next.setNext(next);
     }
 
+    public static int waitInterval = 1000;
+
     public abstract byte[] getCommand();
 
+    public static void setCam(int number)
+    {
+        if(number > 0 && number < heads.length)
+        {
+            currentAddress = heads[number-1];
+        }
+    }
+
     public void execute(String command, SerialPort serialPort) throws UnknownCommandException, SerialPortException {
+
         if (serialPort.isOpened() && command.equals(commandName)) {
             {
+
+
             if(isDaisyChaining())
             {
                 byte[] template = getCommand();
@@ -55,7 +72,9 @@ public abstract class ChainCommand {
                     serialPort.writeBytes(template);
                 }
             }
-                serialPort.writeBytes(getCommand());
+                byte[] template = getCommand();
+                template[0] = currentAddress;
+                serialPort.writeBytes(template);
             }
         } else if (!serialPort.isOpened() && command.equals(commandName)) {
 

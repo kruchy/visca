@@ -1,8 +1,6 @@
 package pl.agh.kis.mult.v01;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
@@ -16,13 +14,12 @@ public class ViscaCtrl implements SerialPortEventListener {
     private HashMap<String, ArrayList<String>> macroMap = new HashMap<>();
     private ChainCommand chainCommand;
     private String macroName;
-
     public boolean canWriteToPort() {
         return serialPort.isOpened();
     }
 
     public ViscaCtrl() {
-        serialPort = new SerialPort("com1");
+        serialPort = new SerialPort("com3");
         try {
             serialPort.openPort();
             serialPort.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
@@ -31,6 +28,7 @@ public class ViscaCtrl implements SerialPortEventListener {
         } catch (SerialPortException e) {
             System.err.println("Cannot write to port");
         }
+
         chainCommand = new UpCommand();
         chainCommand.setNext(new DownCommand());
         chainCommand.setNext(new LeftCommand());
@@ -40,6 +38,16 @@ public class ViscaCtrl implements SerialPortEventListener {
         chainCommand.setNext(new SetAddressCommand());
         chainCommand.setNext(new TeleZoomCommand());
         chainCommand.setNext(new WideZoomCommand());
+        chainCommand.setNext(new WaitCommand());
+        try {
+            executeCommand("set");
+        } catch (SerialPortException e) {
+            e.printStackTrace();
+        } catch (UnknownCommandException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void closeSerial() throws SerialPortException {
@@ -55,7 +63,14 @@ public class ViscaCtrl implements SerialPortEventListener {
             stopMacro();
         } else if (commandString.contains("macro-execute")) {
             executeMacro(commandString);
-        } else if (definingMacro != null) {
+        } else if (commandString.contains("macro-list")) {
+            listMacros();
+        }
+        else if(commandString.contains("set cam"))
+        {
+            setNewCam(commandString);
+        }
+        else if (definingMacro != null) {
             putNewMacro(commandString);
         } else if (definingMacro == null)
         {
@@ -66,8 +81,36 @@ public class ViscaCtrl implements SerialPortEventListener {
         }
     }
 
+    private void setInterval(String commandString) throws UnknownCommandException, InterruptedException, SerialPortException {
+        String[] command = commandString.split(" ");
+        ChainCommand.waitInterval = Integer.valueOf(command[1]);
+        putNewMacro(command[0]);
+    }
+
+    private void setNewCam(String commandString) {
+        String[] command = commandString.split(" ");
+        chainCommand.setCam(Integer.valueOf(command[2]));
+    }
+
+    private void listMacros() {
+        for (String entry : macroMap.keySet())
+        {
+          System.out.println("MACRO "+ entry);
+            Arrays.asList(macroMap.get(entry)).stream().forEach(System.out::println);
+        }
+    }
+
     private void executeSingleCommand(String commandString) throws UnknownCommandException, SerialPortException {
-        chainCommand.execute(commandString, serialPort);
+        if(commandString.contains("wait"))
+        {
+            int interval = Integer.valueOf(commandString.split(" ")[1]);
+            try {
+                Thread.sleep(interval);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        chainCommand.execute(commandString.split(" ")[0], serialPort);
     }
 
     private void putNewMacro(String commandString) {
@@ -88,9 +131,9 @@ public class ViscaCtrl implements SerialPortEventListener {
             ArrayList<String> commandList = macroMap.get(macroName);
             Iterator<String> commandIterator = commandList.iterator();
             while (commandIterator.hasNext()) {
-
                 executeSingleCommand(commandIterator.next());
-                Thread.sleep(5000);
+                Thread.sleep(1000);
+                executeSingleCommand("stop");
             }
         }
     }
@@ -112,6 +155,7 @@ public class ViscaCtrl implements SerialPortEventListener {
         if (serialPortEvent.isRXCHAR() && serialPortEvent.getEventValue() == 10) {
             try {
                 byte[] response = serialPort.readBytes(10);
+                System.out.println(response);
             } catch (SerialPortException e) {
                 System.err.println("Error receiving bytes from port");
             }
