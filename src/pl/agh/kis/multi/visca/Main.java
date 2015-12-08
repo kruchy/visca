@@ -1,12 +1,10 @@
-package pl.agh.kis.mult.v01;
+package pl.agh.kis.multi.visca;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import jssc.SerialPort;
-import jssc.SerialPortException;
-import pl.agh.kis.mult.v01.command.*;
+import pl.agh.kis.multi.visca.command.UnknownCommandException;
 
 /**
  * Created by Krzysiek on 2015-11-27.

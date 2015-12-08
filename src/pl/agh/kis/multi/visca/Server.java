@@ -1,4 +1,4 @@
-package pl.agh.kis.mult.v01;
+package pl.agh.kis.multi.visca;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -52,8 +52,8 @@ public class Server implements Runnable {
 						String params = paramsArr[1];
 						params = params.split("HTTP/")[0];
 						Map<String, String> paramMap = getQueryMap(params);
-						if (paramMap.containsKey("command")) {
-							String command = paramMap.get("command");
+						if (paramMap.containsKey("c")) {
+							String command = paramMap.get("c");
 							command = URLDecoder.decode(command, "UTF-8");
 							String resp = "";
 							try {
@@ -78,7 +78,6 @@ public class Server implements Runnable {
 			try {
 				viscaCtrl.closeSerial();
 			} catch (SerialPortException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

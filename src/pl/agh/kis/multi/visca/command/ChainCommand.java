@@ -1,9 +1,7 @@
-package pl.agh.kis.mult.v01.command;
+package pl.agh.kis.multi.visca.command;
 
 import jssc.SerialPort;
 import jssc.SerialPortException;
-
-import java.util.Arrays;
 
 
 /**
@@ -35,9 +33,7 @@ public abstract class ChainCommand {
         if (serialPort.isOpened() && command.equals(commandName)) {
             {
 
-                byte[] template = getCommand();
-                template[0] = currentAddress;
-                serialPort.writeBytes(template);
+                serialPort.writeBytes(getCommand());
             }
         } else if (!serialPort.isOpened() && command.equals(commandName)) {
 

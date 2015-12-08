@@ -1,4 +1,4 @@
-package pl.agh.kis.mult.v01.command;
+package pl.agh.kis.multi.visca.command;
 
 /**
  * Created by Krzysiek on 2015-11-27.

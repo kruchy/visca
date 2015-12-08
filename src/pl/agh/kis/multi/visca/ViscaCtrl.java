@@ -1,8 +1,8 @@
-package pl.agh.kis.mult.v01;
+package pl.agh.kis.multi.visca;
 
 import jssc.SerialPort;
 import jssc.SerialPortException;
-import pl.agh.kis.mult.v01.command.*;
+import pl.agh.kis.multi.visca.command.*;
 
 public class ViscaCtrl {
     private SerialPort serialPort = null;
@@ -32,8 +32,8 @@ public class ViscaCtrl {
         chainCommand.setNext(new HomeCommand());
         chainCommand.setNext(new StopCommand());
         chainCommand.setNext(new SetAddressCommand());
-        chainCommand.setNext(new TeleZoomCommand());
-        chainCommand.setNext(new WideZoomCommand());
+        chainCommand.setNext(new ZoomInCommand());
+        chainCommand.setNext(new ZoomOutCommand());
         try {
             executeCommand("set");
         } catch (SerialPortException e) {
